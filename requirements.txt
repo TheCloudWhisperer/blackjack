@@ -1,0 +1,105 @@
+"""
+Player against dealer.
+1 deck of 52 cards.
+
+Source of rules = https://wizardofodds.com/games/blackjack/basics/
+
+The objective of the game is to beat the dealer in one of the following ways:
+- Get 21 points on the player's first two cards (called a "blackjack" or "natural"),
+  without a dealer blackjack;
+- Reach a final score higher than the dealer without exceeding 21;
+- Let the dealer draw additional cards until their hand exceeds 21.
+
+The player or players are dealt a two-card hand and add together the value of their cards.
+Face cards (kings, queens, and jacks) are counted as ten points.
+A player and the dealer can count an ace as 1 point or 11 points.
+All other cards are counted as the numeric value shown on the card.
+
+After receiving their first two cards, players have the option of getting a "hit",
+or taking an additional card.
+
+In a given round, the player or the dealer wins by having a score of 21 or by having
+the higher score that is less than 21.
+
+Scoring higher than 21 (called "busting" or "going bust") results in a loss.
+
+A player may win by having any final score equal to or less than 21 if the dealer busts.
+
+If a player holds an ace valued as 11, the hand is called "soft", meaning that the player
+cannot go bust by taking an additional card; the value of the ace will become 1 to prevent
+the hand from exceeding 21. Otherwise, the hand is "hard".
+
+More advanced types of bets may be added at a later time (Insurance, Split, etc.; multiple
+players, etc.).
+"""
+
+"""
+We need a 52-card deck to start with.
+We'll need to track cards that have already been given out, so we're going to use 2 lists:
+- source_deck
+- drawn_cards
+
+Seeds are:
+- Clubs (c)
+- Diamonds (d)
+- Hearts (h)
+- Spades (s)
+
+Cards are:
+- Ace (A) > could be worth 1 or 11 points
+- 2 .. 10
+- Jack (J) > is worth 10 points
+- Queen (Q) > is worth 10 points
+- King (K) > is worth 10 points
+"""
+
+
+"""
+The logic of the game should be:
+1) Player bet
+1a) Does player have enough money to bet?
+2) 1st card to player (show)
+3) 1st card to dealer (show)
+[3a) if 1st card = Ace, then insurance - add later as optional]
+4) 2nd card to player (show)
+5) 2nd card to dealer (hide)
+5a) If dealer has Blackjack, then show!
+5b) If dealer had Blackjack, then dealer wins (unless player also has Blackjack,
+    this is a "push" an wages are returned to the player)
+[5c) if dealer had Blackjack and 1st card was Ace, then Insurance is paid out here]
+6) Player's turn: at this stage, the player can see their cards, but only the 1st
+                  card of the dealer.
+   The player has the following choices:
+   - Stand: player stands with their cards and it's back to dealer
+   - Hit: player draws one more card (and additionals, if desired) - if tally is over
+          21, then player is bust and loses
+   [Optional]- Double: Player doubles his bet and gets one, and only one, more card
+   [Optional]- Split: If the player has a pair, or any two 10-point cards, then he
+                      may double his bet and separate his cards into two individual
+                      hands. The dealer will automatically give each card a second
+                      card. Then, the player may hit, stand, or double normally.
+                      However, when splitting aces, each ace gets only one card.
+                      Sometimes doubling after splitting is not allowed. If the player
+                      gets a ten and ace after splitting, then it counts as 21 points,
+                      not a blackjack. Usually the player may keep re-splitting up to a
+                      total of four hands. Sometimes re-splitting aces is not allowed.
+   - Surrender: The player forfeits half his wager, keeping the other half, and does
+                not play out his hand. This option is only available on the initial two
+                cards.
+7) Dealer's turn: if the player has not gone bust and the dealer does not have Blackjack,
+                  then it's the dealer's turn.
+   The dealer has the following choices:
+   - As long as he has 16 or less, then he'll draw another card
+   - If he has a "soft 17" (Ace + any number of card totalling 6 points, eg. 2+4, or 2+2+2),
+     then he'll draw another card
+8) If the dealer goes over 21 points, then the player wins (if the dealer is playing, then
+   the player has not gone bust at this stage)
+9) If the dealer does not bust, then the higher point total between the player and dealer
+   wins
+10) Bets are paid out:
+    - if player wins with a Blackjack, then she gets her money back, and then 1.5 times her
+      money again
+    - if player wins but has no Blackjack, then she gets her money back, and then the same
+      again
+    - if player loses, then she has her bet taken away
+"""
