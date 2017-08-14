@@ -23,6 +23,7 @@ class Participant(object):
 class Player(Participant):
 
     def __init__(self,bankroll=0):
+        self.name = ""
         self.bankroll = bankroll
         self.bet = 0
         self.cards = []
