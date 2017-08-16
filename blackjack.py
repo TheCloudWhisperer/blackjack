@@ -79,6 +79,17 @@ def add_money():
 
 
 """
+Setting up initial player bankroll
+"""
+def bankroll_setup():
+
+    global player
+
+    print "\n\tHello %s!\n\tLet's set up your money pot to start with..." % (player.name)
+    add_money()
+
+
+"""
 Take player bet.
 Bet can only be integer numbers.
 """
@@ -95,7 +106,7 @@ def take_player_bet():
     if player.bankroll == 0:
         answer = raw_input("\n\tYou currently have no funds, would you like to add some? [y/N]: ")
 
-        if answer == 'y':   # add other checks, like capital Y, etc...
+        if answer.lower() in ('y', 'yes'):   # add other checks, like capital Y, etc...
             add_money()
         else:
             print "\n\tSince you have no funds and no intention to add any, your game ends here!" \
@@ -138,6 +149,18 @@ def init_game_deck():
     sh(playing_deck)
 
 
+"""
+Let's have a nice new function to assign cards to a player
+"""
+def give_card():
+
+    global playing_deck
+
+    card = playing_deck.pop()
+
+    return card
+
+
 # Debug
 
 #print player.cards
@@ -168,17 +191,40 @@ def init_game():
     global player
 
     player.name = ask_player_name()
-    print player.name
+    # Debug
+    print "\t" + player.name
+
+    # Let's add some funds
+    bankroll_setup()
+    # Debug
+    print "\tYour money pot currently is: " + str(player.bankroll)
 
 
 def play_game():
 
-    # 1. Player bet
-    print take_player_bet()
+    global player
+    global dealer
 
-    # 2. 1 card to player, 1 card to dealer (both face up)
+    # 1. Shuffling the cards
+    init_game_deck()
 
-    # 3. 2nd card to player (face up), 2nd card to dealer (face down, unless bj)
+    # 2. Player bet - print only for Debug purposes
+    print "\tYour bet: " + str(take_player_bet())
+
+    # 3. 1 card to player, 1 card to dealer (both face up)
+    player.cards.append(give_card())
+    dealer.cards.append(give_card())
+    player.cards.append(give_card())
+    dealer.cards.append(give_card())
+    print "Player Cards:"
+    print player.cards
+    print "Dealer Cards:"
+    print dealer.cards
+
+
+    # 4. 2nd card to player (face up), 2nd card to dealer (face down, unless bj)
+
+    # 5. Check if player/dealer have blackjack
 
     pass
 
