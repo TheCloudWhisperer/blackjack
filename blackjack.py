@@ -14,6 +14,61 @@ base_deck = ('Ac', '2c', '3c', '4c', '5c', '6c', '7c', '8c', '9c', 'Tc', 'Jc', '
 # The "playing deck" is the deck currently in use - it will be 'populated' with the
 # cards from the "source deck" and then shuffled every time
 playing_deck = []
+# Let's also have a dictionary to translate short card notation into human notation
+card_dict = {
+    'Ac': 'Ace of Clubs',
+    '2c': '2 of Clubs',
+    '3c': '3 of Clubs',
+    '4c': '4 of Clubs',
+    '5c': '5 of Clubs',
+    '6c': '6 of Clubs',
+    '7c': '7 of Clubs',
+    '8c': '8 of Clubs',
+    '9c': '9 of Clubs',
+    'Tc': '10 of Clubs',
+    'Jc': 'Jack of Clubs',
+    'Qc': 'Queen of Clubs',
+    'Kc': 'King of Clubs',
+    'Ad': 'Ace of Diamonds',
+    '2d': '2 of Diamonds',
+    '3d': '3 of Diamonds',
+    '4d': '4 of Diamonds',
+    '5d': '5 of Diamonds',
+    '6d': '6 of Diamonds',
+    '7d': '7 of Diamonds',
+    '8d': '8 of Diamonds',
+    '9d': '9 of Diamonds',
+    'Td': '10 of Diamonds',
+    'Jd': 'Jack of Diamonds',
+    'Qd': 'Queen of Diamonds',
+    'Kd': 'King of Diamonds',
+    'Ah': 'Ace of Hearts',
+    '2h': '2 of Hearts',
+    '3h': '3 of Hearts',
+    '4h': '4 of Hearts',
+    '5h': '5 of Hearts',
+    '6h': '6 of Hearts',
+    '7h': '7 of Hearts',
+    '8h': '8 of Hearts',
+    '9h': '9 of Hearts',
+    'Th': '10 of Hearts',
+    'Jh': 'Jack of Hearts',
+    'Qh': 'Queen of Hearts',
+    'Kh': 'King of Hearts',
+    'As': 'Ace of Spades',
+    '2s': '2 of Spades',
+    '3s': '3 of Spades',
+    '4s': '4 of Spades',
+    '5s': '5 of Spades',
+    '6s': '6 of Spades',
+    '7s': '7 of Spades',
+    '8s': '8 of Spades',
+    '9s': '9 of Spades',
+    'Ts': '10 of Spades',
+    'Js': 'Jack of Spades',
+    'Qs': 'Queen of Spades',
+    'Ks': 'King of Spades'
+}
 # Not sure if I will need this - may use to keep track of the cards that have already
 # been drawn from the deck in play
 drawn_cards = []
@@ -95,7 +150,7 @@ def take_money(entity, amount):
             entity.bankroll -= amount
 
             print "\n\tI have now taken %s out of your money pot." \
-                  "\n\tYour remaining pot is %s" % (str(amount),str(entity.bankroll))
+                  "\n\tYour remaining pot is: %s" % (str(amount),str(entity.bankroll))
 
             valid_answer = True
 
@@ -148,6 +203,8 @@ def take_player_bet(entity):
                       "\n\tPlease try again!" % (entity.bankroll)
             else:
                 take_money(entity,bet)
+                #We record the player's bet, so that we can calculate their wins
+                entity.bet = bet
                 valid_bet = True
 
     return bet
@@ -268,14 +325,41 @@ def play_game():
     dealer.cards.append(give_card())
     player.cards.append(give_card())
     dealer.cards.append(give_card())
-    print "Player Cards:"
-    print player.cards
-    print len(player.cards)
+    print "\n\t%s, your cards are:" \
+          "\n\t%s\n\t%s" % (player.name,card_dict[player.cards[0]],card_dict[player.cards[1]])
+    #print player.cards
+    #print len(player.cards)
+    print "\n\tDealer's cards are:" \
+          "\n\t%s\n\t%s" % (card_dict[dealer.cards[0]],card_dict[dealer.cards[1]])
+
     if has_blackjack(player):
         print "\n\t%s, you have blackjack!" % player.name
-    print "Dealer Cards:"
-    print dealer.cards
-    print len(dealer.cards)
+
+        if has_blackjack(dealer):
+            # Player wins back their money, nothing more
+            print "\n\tDealer also has blackjack!" \
+                  "\n\tI am giving you back your money."
+            player.bankroll += player.bet
+            player.bet = 0
+            print "\n\tYour money pot is now back to: %s" % str(player.bankroll)
+
+        else:
+            # Player wins back their money, plus 3/2 of the bet
+            prize = player.bet + (player.bet * 1.5)
+            print "\n\t%s, you won!" \
+                  "\n\tI am now paying out: %s" % (player.name,str(prize))
+            player.bankroll += prize
+            player.bet = 0
+            print "\n\tYour money pot is now: %s" % str(player.bankroll)
+
+    elif has_blackjack(dealer):
+        # Player loses
+        print "\n\tDealer has blackjack. %s, you lose this round." % (player.name)
+        player.bet = 0
+
+    #print "Dealer Cards:"
+    #print dealer.cards
+    #print len(dealer.cards)
     if has_blackjack(dealer):
         print "\n\tDealer has blackjack!"
 
