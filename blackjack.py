@@ -61,9 +61,9 @@ def ask_player_name():
 """
 Adding funds to the player's bankroll
 """
-def add_money():
+#def add_money():
+def add_money(entity):
 
-    global player
     valid_answer = False
 
     while not valid_answer:
@@ -74,43 +74,64 @@ def add_money():
                   "\n\tPlease try again!"
         else:
             print "\n\tThank you, I added that to your pot!"
-            player.bankroll += amount
+            entity.bankroll += amount
+            valid_answer = True
+
+
+"""
+Taking funds from the player's bankroll
+"""
+def take_money(entity, amount):
+
+    valid_answer = False
+
+    while not valid_answer:
+
+        if amount > entity.bankroll:
+            print "Something has gone wrong, trying to bet more than you have in your pot."
+            exit (200)
+
+        else:
+            entity.bankroll -= amount
+
+            print "\n\tI have now taken %s out of your money pot." \
+                  "\n\tYour remaining pot is %s" % (str(amount),str(entity.bankroll))
+
             valid_answer = True
 
 
 """
 Setting up initial player bankroll
 """
-def bankroll_setup():
+def bankroll_setup(entity):
 
-    global player
-
-    print "\n\tHello %s!\n\tLet's set up your money pot to start with..." % (player.name)
-    add_money()
+    print "\n\tHello %s!\n\tLet's set up your money pot to start with..." % (entity.name)
+    add_money(entity)
 
 
 """
 Take player bet.
 Bet can only be integer numbers.
 """
-def take_player_bet():
+def take_player_bet(entity):
 
-    global player
+    #global player
     valid_bet = False
 
     # Checking players' funds first: if Zero, then offer to add funds
     # (separate function?)
 
-    print "\n\tHello %s!" % (player.name)
+    print "\n\tHello %s!" % (entity.name)
 
-    if player.bankroll == 0:
+    if entity.bankroll == 0:
         answer = raw_input("\n\tYou currently have no funds, would you like to add some? [y/N]: ")
 
         if answer.lower() in ('y', 'yes'):   # add other checks, like capital Y, etc...
-            add_money()
+            #add_money()
+            add_money(entity)
         else:
             print "\n\tSince you have no funds and no intention to add any, your game ends here!" \
-                  "\n\tThank you for playing %s!\n" % (player.name)
+                  "\n\tThank you for playing %s!\n" % (entity.name)
             exit(100)
 
     while not valid_bet:
@@ -121,11 +142,12 @@ def take_player_bet():
             print "\n\tI am afraid that was not a valid bet." \
                   "\n\tPlease try again!"
         else:
-            if bet > player.bankroll:
+            if bet > entity.bankroll:
                 print "\n\tI am afraid do not have sufficient funds." \
                       "\n\tYou currently have %s at your disposal." \
-                      "\n\tPlease try again!" % (player.bankroll)
+                      "\n\tPlease try again!" % (entity.bankroll)
             else:
+                take_money(entity,bet)
                 valid_bet = True
 
     return bet
@@ -159,6 +181,36 @@ def give_card():
     card = playing_deck.pop()
 
     return card
+
+
+"""
+Need a function to check whether player/dealer has blackjack
+"""
+def has_blackjack(entity):
+
+    """
+    Either player will require a combination of Ace + ten points' card to have
+    blackjack, seeds won't matter!
+    Also, either will need exactly 2 cards.
+    """
+    has_ace = False
+    has_ten = False
+
+    if len(entity.cards) != 2:
+        print "Wrong number of cards for blackjack."
+        return False
+    else:
+        for card in entity.cards:
+            if card[0] == 'A':
+                has_ace = True
+            elif card[0] in ['T', 'J', 'Q', 'K']:
+                has_ten = True
+
+    if has_ace and has_ten:
+        return True
+    else:
+        return False
+
 
 
 # Debug
@@ -195,7 +247,7 @@ def init_game():
     print "\t" + player.name
 
     # Let's add some funds
-    bankroll_setup()
+    bankroll_setup(player)
     # Debug
     print "\tYour money pot currently is: " + str(player.bankroll)
 
@@ -209,7 +261,7 @@ def play_game():
     init_game_deck()
 
     # 2. Player bet - print only for Debug purposes
-    print "\tYour bet: " + str(take_player_bet())
+    print "\tYour bet: " + str(take_player_bet(player))
 
     # 3. 1 card to player, 1 card to dealer (both face up)
     player.cards.append(give_card())
@@ -218,8 +270,14 @@ def play_game():
     dealer.cards.append(give_card())
     print "Player Cards:"
     print player.cards
+    print len(player.cards)
+    if has_blackjack(player):
+        print "\n\t%s, you have blackjack!" % player.name
     print "Dealer Cards:"
     print dealer.cards
+    print len(dealer.cards)
+    if has_blackjack(dealer):
+        print "\n\tDealer has blackjack!"
 
 
     # 4. 2nd card to player (face up), 2nd card to dealer (face down, unless bj)

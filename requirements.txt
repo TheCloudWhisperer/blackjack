@@ -102,4 +102,8 @@ The logic of the game should be:
     - if player wins but has no Blackjack, then she gets her money back, and then the same
       again
     - if player loses, then she has her bet taken away
+
+A spin on it could be that either a) the player sets an initial pot of money, and once that
+runs out the game is over, or b) the player is presented with a menu at each round where
+he/she can choose whether they want to bet, add money to the pot or cash out.
 """
