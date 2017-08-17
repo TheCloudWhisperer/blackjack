@@ -1,8 +1,14 @@
 #!/usr/local/bin/python
 
-# Imports
+## Imports
+# We'll need to shuffle the card deck
 from random import shuffle as sh
+# Importing my own class definitions
 import bj_classes as bjc
+# We'll need to know which OS we are running on
+from sys import platform
+# We will want to clear the screen from time to time
+from os import system
 
 # Global Variables:
 # The "source deck" is the full, ordered deck of cards - this should never change,
@@ -81,6 +87,31 @@ player = bjc.Player()
 """
 Supporting functions
 """
+
+"""
+Clearing the screen
+"""
+def clear_screen():
+    """
+    This function clears the screen.
+    We capture what system (Windows, Linux, OS X) the game is running
+    on in a global var with the init_game() function. We also set in the
+    same function the correct command to clear the screen.
+    This should be called after every move (if the move is valid), before
+    the board is updated and printed out again.
+    """
+
+    # Let's see which OS we are running on:
+    op_sys = platform
+
+    # Let's set the correct command to clear the screen
+    if op_sys == 'darwin':
+        clr_comm = 'clear'
+    else:
+        clr_comm = 'not set'
+
+    dummy_var = system(clr_comm)
+
 
 """
 Setting up the player
@@ -269,6 +300,40 @@ def has_blackjack(entity):
         return False
 
 
+"""
+A smart function that prints:
+- all the Player's cards
+- the Dealer's cards depending on stage of game (hole card yes/no)
+"""
+
+def print_cards(entity,boolean):
+
+    global player
+    global dealer
+
+    hole_card = boolean
+
+    if entity == player:
+        is_dealer = False
+    elif entity == dealer:
+        is_dealer = True
+    else:
+        print "\n\tSomething went wrong!\n\tExiting!"
+        exit (300)
+
+    if not is_dealer:
+        print "\n\t%s, your cards are:" % (entity.name)
+        for card in entity.cards:
+            print "\t" + card_dict[card]
+    else:
+        if hole_card:
+            print "\n\tDealer's cards are:" \
+                  "\n\t%s\n\t%s" % (card_dict[dealer.cards[0]],"'Hole card'")
+        else:
+            print "\n\tDealer's cards are:"
+            for card in entity.cards:
+                print "\t" + card_dict[card]
+
 
 # Debug
 
@@ -297,16 +362,19 @@ Main game functions
 
 def init_game():
 
+    # Setup ----
+
     global player
 
+    clear_screen()
     player.name = ask_player_name()
-    # Debug
-    print "\t" + player.name
 
     # Let's add some funds
+    clear_screen()
     bankroll_setup(player)
+
     # Debug
-    print "\tYour money pot currently is: " + str(player.bankroll)
+    # print "\tYour money pot currently is: " + str(player.bankroll)
 
 
 def play_game():
@@ -318,19 +386,21 @@ def play_game():
     init_game_deck()
 
     # 2. Player bet - print only for Debug purposes
-    print "\tYour bet: " + str(take_player_bet(player))
+    #print "\tYour bet: " + str(take_player_bet(player))
+    take_player_bet(player)
 
     # 3. 1 card to player, 1 card to dealer (both face up)
     player.cards.append(give_card())
     dealer.cards.append(give_card())
     player.cards.append(give_card())
     dealer.cards.append(give_card())
-    print "\n\t%s, your cards are:" \
-          "\n\t%s\n\t%s" % (player.name,card_dict[player.cards[0]],card_dict[player.cards[1]])
-    #print player.cards
-    #print len(player.cards)
-    print "\n\tDealer's cards are:" \
-          "\n\t%s\n\t%s" % (card_dict[dealer.cards[0]],card_dict[dealer.cards[1]])
+
+    print_cards(player,False)
+
+    print_cards(dealer,True)
+
+    # Debug
+    print_cards(dealer,False)
 
     if has_blackjack(player):
         print "\n\t%s, you have blackjack!" % player.name
@@ -360,8 +430,8 @@ def play_game():
     #print "Dealer Cards:"
     #print dealer.cards
     #print len(dealer.cards)
-    if has_blackjack(dealer):
-        print "\n\tDealer has blackjack!"
+    #if has_blackjack(dealer):
+    #    print "\n\tDealer has blackjack!"
 
 
     # 4. 2nd card to player (face up), 2nd card to dealer (face down, unless bj)
@@ -373,6 +443,7 @@ def play_game():
 
 def main():
 
+    init_game()
     play_game()
 
 # ---- ---- ----
@@ -380,7 +451,5 @@ def main():
 """
 Script execution
 """
-
-init_game()
 
 main()
