@@ -1,0 +1,576 @@
+#!/usr/local/bin/python
+
+## Imports
+# We'll need to shuffle the card deck
+from random import shuffle as sh
+# Importing my own class definitions
+import bj_classes as bjc
+# We'll need to know which OS we are running on
+from sys import platform
+# We will want to clear the screen from time to time
+from os import system
+
+# Global Variables:
+# The "source deck" is the full, ordered deck of cards - this should never change,
+# hence we define it as a tuple - now moved to file bj_classes, imported as "bjc"
+"""
+Now moved to file bj_classes, imported as "bjc"
+base_deck = ('Ac', '2c', '3c', '4c', '5c', '6c', '7c', '8c', '9c', 'Tc', 'Jc', 'Qc', 'Kc',
+             'Ad', '2d', '3d', '4d', '5d', '6d', '7d', '8d', '9d', 'Td', 'Jd', 'Qd', 'Kd',
+             'Ah', '2h', '3h', '4h', '5h', '6h', '7h', '8h', '9h', 'Th', 'Jh', 'Qh', 'Kh',
+             'As', '2s', '3s', '4s', '5s', '6s', '7s', '8s', '9s', 'Ts', 'Js', 'Qs', 'Ks')
+"""
+# The "playing deck" is the deck currently in use - it will be 'populated' with the
+# cards from the "source deck" and then shuffled every time
+playing_deck = []
+# Let's also have a dictionary to translate short card notation into human notation
+# Now moved to file bj_classes, imported as "bjc"
+"""
+Now moved to file bj_classes, imported as "bjc"
+card_dict = {
+    'Ac': 'Ace of Clubs',
+    '2c': '2 of Clubs',
+    '3c': '3 of Clubs',
+    '4c': '4 of Clubs',
+    '5c': '5 of Clubs',
+    '6c': '6 of Clubs',
+    '7c': '7 of Clubs',
+    '8c': '8 of Clubs',
+    '9c': '9 of Clubs',
+    'Tc': '10 of Clubs',
+    'Jc': 'Jack of Clubs',
+    'Qc': 'Queen of Clubs',
+    'Kc': 'King of Clubs',
+    'Ad': 'Ace of Diamonds',
+    '2d': '2 of Diamonds',
+    '3d': '3 of Diamonds',
+    '4d': '4 of Diamonds',
+    '5d': '5 of Diamonds',
+    '6d': '6 of Diamonds',
+    '7d': '7 of Diamonds',
+    '8d': '8 of Diamonds',
+    '9d': '9 of Diamonds',
+    'Td': '10 of Diamonds',
+    'Jd': 'Jack of Diamonds',
+    'Qd': 'Queen of Diamonds',
+    'Kd': 'King of Diamonds',
+    'Ah': 'Ace of Hearts',
+    '2h': '2 of Hearts',
+    '3h': '3 of Hearts',
+    '4h': '4 of Hearts',
+    '5h': '5 of Hearts',
+    '6h': '6 of Hearts',
+    '7h': '7 of Hearts',
+    '8h': '8 of Hearts',
+    '9h': '9 of Hearts',
+    'Th': '10 of Hearts',
+    'Jh': 'Jack of Hearts',
+    'Qh': 'Queen of Hearts',
+    'Kh': 'King of Hearts',
+    'As': 'Ace of Spades',
+    '2s': '2 of Spades',
+    '3s': '3 of Spades',
+    '4s': '4 of Spades',
+    '5s': '5 of Spades',
+    '6s': '6 of Spades',
+    '7s': '7 of Spades',
+    '8s': '8 of Spades',
+    '9s': '9 of Spades',
+    'Ts': '10 of Spades',
+    'Js': 'Jack of Spades',
+    'Qs': 'Queen of Spades',
+    'Ks': 'King of Spades'
+}
+"""
+# Not sure if I will need this - may use to keep track of the cards that have already
+# been drawn from the deck in play - commenting out for now...
+#drawn_cards = []
+# Defining the Dealer and Player objects as global
+dealer = bjc.Participant()
+player = bjc.Player()
+
+# ---- ---- ----
+
+"""
+Supporting functions
+"""
+
+"""
+Clearing the screen
+"""
+def clear_screen():
+    """
+    This function clears the screen.
+    We capture what system (Windows, Linux, OS X) the game is running
+    on in a global var with the init_game() function. We also set in the
+    same function the correct command to clear the screen.
+    This should be called after every move (if the move is valid), before
+    the board is updated and printed out again.
+    """
+
+    # Let's see which OS we are running on:
+    op_sys = platform
+
+    # Let's set the correct command to clear the screen
+    if op_sys == 'darwin':
+        clr_comm = 'clear'
+    else:
+        clr_comm = 'not set'
+
+    dummy_var = system(clr_comm)
+
+
+"""
+Setting up the player
+"""
+def ask_player_name():
+    """
+    This function will be called during the game's init phase to greet the
+    Player and record their name.
+    It will return the player's name as a string.
+
+    ToDo: We could ask confirmation that the name entered is correct, and if not
+    offer the player to reset their name - left for future improvement, keeping it
+    simple for now.
+    """
+
+    valid_name = False
+
+    print "\n\tHello Player!"
+
+    while not valid_name:
+
+        player_name = raw_input("\n\tWhat is your name? [Press Enter to confirm]: ")
+
+        if player_name == '':
+            print "\n\tI am sorry, I did not catch your name." \
+                  "\n\tPlease try again.."
+        else:
+            valid_name = True
+
+    return player_name
+
+
+"""
+Adding funds to the player's bankroll
+"""
+#def add_money():
+def add_money(entity):
+
+    valid_answer = False
+
+    while not valid_answer:
+        try:
+            amount = int(raw_input("\n\tHow much money do you want to add to your pot? [Press Enter to confirm]: $"))
+        except ValueError as ex:
+            print "\n\tI am afraid that is not a valid amount." \
+                  "\n\tPlease try again!"
+        else:
+            print "\n\tThank you, I added that to your pot!"
+            entity.bankroll += amount
+            valid_answer = True
+            dummy_var = raw_input("\n\tPlease press Enter to continue! ")
+
+
+"""
+Taking funds from the player's bankroll
+"""
+def take_money(entity, amount):
+
+    valid_answer = False
+
+    while not valid_answer:
+
+        if amount > entity.bankroll:
+            print "Something has gone wrong, trying to bet more than you have in your pot."
+            exit (200)
+
+        else:
+            entity.bankroll -= amount
+
+            print "\n\tI have now taken $%s out of your money pot." \
+                  "\n\tYour remaining pot is: $%s" % (str(amount), str(entity.bankroll))
+
+            valid_answer = True
+
+
+"""
+Setting up initial player bankroll
+"""
+def bankroll_setup(entity):
+
+    print "\n\tHello %s!\n\tLet's set up your money pot to start with..." % (entity.name)
+    add_money(entity)
+
+
+"""
+Take player bet.
+Bet can only be integer numbers.
+"""
+def take_player_bet(entity):
+
+    #global player
+    valid_bet = False
+
+    clear_screen()
+
+    # print "\n\tHello %s!" % (entity.name)
+
+    if entity.bankroll == 0:
+        answer = raw_input("\n\tYou currently have no funds, would you like to add some? [y/N]: ")
+
+        if answer.lower() in ('y', 'yes'):   # add other checks, like capital Y, etc...
+            #add_money()
+            add_money(entity)
+        else:
+            print "\n\tSince you have no funds and no intention to add any, your game ends here!" \
+                  "\n\tThank you for playing %s!\n" % (entity.name)
+            exit(100)
+
+    while not valid_bet:
+        # Asking the player to bet
+        try:
+            bet = int(raw_input("\n\tPlease, place your bet! [Press Enter to confirm]: $"))
+        except ValueError as ex:
+            print "\n\tI am afraid that was not a valid bet." \
+                  "\n\tPlease try again!"
+        else:
+            if bet > entity.bankroll:
+                print "\n\tI am afraid do not have sufficient funds." \
+                      "\n\tYou currently have $%s at your disposal." \
+                      "\n\tPlease try again!" % (entity.bankroll)
+            else:
+                take_money(entity, bet)
+                #We record the player's bet, so that we can calculate their wins
+                entity.bet = bet
+                valid_bet = True
+                dummy_var = raw_input("\n\tPlease press Enter to receive your cards! ")
+
+    return bet
+
+
+"""
+We will have to replenish and reshuffle the deck every time we start a new "game"
+"""
+def init_game_deck():
+    """
+    We set the contents of the global variable that is the playing deck by
+    transforming the base deck (tuple) into a list that we can "pop" cards out
+    of.
+    We then shuffle the playing deck, so that cards are always popped from the
+    end of the list, but are also randomised.
+    """
+    global playing_deck
+
+    playing_deck = list(bjc.base_deck)
+
+    sh(playing_deck)
+
+
+"""
+Let's have a nice new function to assign cards to a player
+"""
+def give_card():
+
+    global playing_deck
+
+    card = playing_deck.pop()
+
+    return card
+
+
+"""
+Need a function to check whether player/dealer has blackjack
+"""
+def has_blackjack(entity):
+
+    """
+    Either player will require a combination of Ace + ten points' card to have
+    blackjack, seeds won't matter!
+    Also, either will need exactly 2 cards.
+    """
+    has_ace = False
+    has_ten = False
+
+    if len(entity.cards) != 2:
+        print "Wrong number of cards for blackjack."
+        return False
+    else:
+        for card in entity.cards:
+            if card[0] == 'A':
+                has_ace = True
+            elif card[0] in ['T', 'J', 'Q', 'K']:
+                has_ten = True
+
+    if has_ace and has_ten:
+        return True
+    else:
+        return False
+
+
+"""
+A little function to deal with the Dealer's Ace insurance
+"""
+def ace_insurance(entity):
+
+    valid_answer = False
+    valid_amount = False
+
+    while not valid_answer:
+        # Asking the player to bet
+        answer = raw_input("\n\tDealer's first card is an Ace!"
+                           "\n\tDo you want to buy insurance? [y/N]: ")
+
+        if answer.lower() in ('y', 'yes'):
+            valid_answer = True
+
+            while not valid_amount:
+            # Asking the player for insurance amount
+
+                try:
+                    amount = int(raw_input("\n\tHow much insurance do you want to buy? [Press Enter to confirm]: $"))
+
+                except ValueError as ex:
+                    print "\n\tI am afraid that was not a valid amount." \
+                          "\n\tPlease try again!"
+
+                else:
+
+                    if amount > (entity.bet / 2):
+                        print "\n\tI am afraid you cannot buy insurance bigger than $%s" \
+                              "\n\tYour bet is currently $%s" \
+                              "\n\tPlease try again!" % (str(entity.bet/2), str(entity.bet))
+
+                    elif amount > entity.bankroll:
+                        print "\n\tI am afraid your funds won't stretch that far!" \
+                              "\n\tYour current money pot is $%s" \
+                              "\n\tPlease try again!" % (str(entity.bankroll))
+
+                    else:
+                        take_money(entity, amount)
+                        # We record the player's insurance, so that we can calculate their wins
+                        entity.insurance = amount
+                        entity.has_insurance = True
+                        valid_amount = True
+
+        elif answer.lower() in ('n', 'no', ''):
+            valid_answer = True
+            print "\n\tVery well, let's keep playin'!"
+
+        else:
+            print "\n\tI did not get that, let's try again..."
+
+
+"""
+A smart function that prints:
+- all the Player's cards
+- the Dealer's cards depending on stage of game (hole card yes/no)
+"""
+
+def print_cards(entity,boolean):
+
+    global player
+    global dealer
+
+    hole_card = boolean
+
+    if entity == player:
+        is_dealer = False
+    elif entity == dealer:
+        is_dealer = True
+    else:
+        print "\n\tSomething went wrong!\n\tExiting!"
+        exit (300)
+
+    if not is_dealer:
+        print "\n\t%s, your cards are:" % (entity.name)
+        for card in entity.cards:
+            print "\t" + bjc.card_dict[card]
+    else:
+        if hole_card:
+            print "\n\tDealer's cards are:" \
+                  "\n\t%s\n\t%s" % (bjc.card_dict[dealer.cards[0]],"'Hole card'")
+        else:
+            print "\n\tDealer's cards are:"
+            for card in entity.cards:
+                print "\t" + bjc.card_dict[card]
+
+
+
+# ---- ---- ----
+
+
+
+"""
+Main game functions
+"""
+
+def init_game():
+
+    # Setup ----
+
+    global player
+
+    clear_screen()
+    player.name = ask_player_name()
+
+    # Let's add some funds
+    clear_screen()
+    bankroll_setup(player)
+
+
+def play_game():
+
+    global player
+    global dealer
+
+
+    # 1. Shuffling the cards
+    init_game_deck()
+
+
+    # 2. Player bet
+    # print only for Debug purposes
+    #print "\tYour bet: " + str(take_player_bet(player))
+    take_player_bet(player)
+
+
+    # 3. 1 card to player, 1 card to dealer (both face up)
+    player.cards.append(give_card())
+    dealer.cards.append(give_card())
+
+
+    # 4. 2nd card to player (face up), 2nd card to dealer
+    player.cards.append(give_card())
+    dealer.cards.append(give_card())
+
+    # Print out cards for the first time
+    # Dealer's 2nd card is face down
+    clear_screen()
+    print_cards(player, False)
+    print_cards(dealer, True)
+
+
+    # 5. In case Dealer's 1st card is an Ace, Player can get insurance
+    if dealer.cards[0][0] == 'A':
+        ace_insurance(player)
+
+        # Debug
+        #print_cards(dealer, False)
+
+
+    # 6. Check if player/dealer have blackjack
+    if has_blackjack(player):
+        print "\n\t%s, you have blackjack!" % player.name
+
+        if has_blackjack(dealer):
+            # Player wins back their money, nothing more
+
+            # Printing dealer's blackjack message:
+            print "\n\tDealer also has blackjack!"
+
+            # Showing all cards!
+            dummy_var = raw_input("\n\tPress Enter to see Dealer's cards: ")
+            clear_screen()
+            print_cards(player, False)
+            print_cards(dealer, False)
+
+            # Sorting out the player's funds:
+            player.bankroll += player.bet
+            player.bet = 0
+            print "\n\tI am giving you back your bet ($%s)." % str(player.bet)
+
+            if player.has_insurance:
+                print "\n\tYou bought insurance, I am now also paying out that!" \
+                      "\n\tYour insurance was $%s, so I am now paying out $%s" % \
+                      (player.insurance, player.insurance * 2)
+                player.bankroll += player.insurance * 2
+                player.insurance = 0
+                print "\n\tYour money pot is now: $%s" % str(player.bankroll)
+            else:
+                print "\n\tYour money pot is now back to: $%s" % str(player.bankroll)
+
+        else:
+            # Player wins back their money, plus 3/2 of the bet
+            #prize = player.bet + (player.bet * 1.5)
+            print "\n\tYou won!" \
+                  "\n\tI am now paying out: $%s" % (str(player.bet * 1.5))
+            player.bankroll += player.bet * 1.5
+            player.bet = 0
+            print "\n\tYour money pot is now: $%s" % str(player.bankroll)
+
+    elif has_blackjack(dealer):
+        # Player loses
+
+        # Printing dealer's blackjack message:
+        print "\n\tDealer has blackjack. %s, you lose this round." % (player.name)
+
+        # Showing all cards!
+        dummy_var = raw_input("\n\tPress Enter to see Dealer's cards: ")
+        clear_screen()
+        print_cards(player, False)
+        print_cards(dealer, False)
+
+        # Player loses money he had bet - nothing happens to the money pot
+        player.bet = 0
+
+        if player.has_insurance:
+            print "\n\tYou lost your bet, but luckily you had bought insurance... I am now paying that out!" \
+                  "\n\tYour insurance was $%s, so I am now paying back $%s" % \
+                  (player.insurance, player.insurance * 2)
+            player.bankroll += player.insurance * 2
+            player.insurance = 0
+
+        print "\n\tYour money pot is now: $%s" % str(player.bankroll)
+
+
+
+    # 7. If we're here, neither has blackjack and a few things can happen:
+    #    a. Dealer's 1st card is an Ace, player may want to get insurance
+    #    [moved up!!]
+    #    b. Player may want to: Stand, Hit, Double, Split, Surrender
+    #    c. If player keeps playing, he may "bust" (ie. go over 21)
+    #    d. If player Stands, Dealer will need to draw cards according to rules
+    #    e. Dealer may win or "bust"
+
+    # We may need a function counting points, so that we can compare them
+
+    print "\n\tHow do you want to play? You can:" \
+          "\n\tStand (s)" \
+          "\n\tHit (h)" \
+          "\n\tSurrender (x)"
+
+    valid_play = False
+    while not valid_play:
+        play = raw_input("\n\tMake your choice [s,h,X]: ")
+        if play.lower() not in ('s', 'h', 'x', ''):
+            print "\n\tI am sorry, that was not a valid choice. Let's try again!"
+        elif play.lower() == 's':
+            print "Staying!"
+            valid_play = True
+        elif play.lower() == 'h':
+            print "Hit me!"
+            valid_play = True
+        else:
+            print "I surrender!"
+            valid_play = True
+
+
+def main():
+
+    init_game()
+
+    ## The below will need to be invoked in a loop.
+    #+ Each time, the player should have the following options:
+    #+ 1. Add funds to money pot
+    #+ 2. Bet (ie. start a new game)
+    #+ 3. Cash out their wins
+    play_game()
+
+# ---- ---- ----
+
+"""
+Script execution
+"""
+
+main()
